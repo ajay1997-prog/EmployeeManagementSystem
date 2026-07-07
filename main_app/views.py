@@ -27,10 +27,10 @@ def doLogin(request, **kwargs):
     if request.method != 'POST':
         return HttpResponse("<h4>Denied</h4>")
     else:
-        #Google recaptcha
+        # Google recaptcha
         captcha_token = request.POST.get('g-recaptcha-response')
         captcha_url = "https://www.google.com/recaptcha/api/siteverify"
-        captcha_key = "6Lf9RfcnAAAAAIn2o_U8h3KQwb3lVMeDvenBCXYp"
+        captcha_key = "6Lf1vUgtAAAAAA6hVdq-h4F1hAxk4LWF8XYF8gWM"
         data = {
             'secret': captcha_key,
             'response': captcha_token
@@ -45,9 +45,10 @@ def doLogin(request, **kwargs):
         except:
             messages.error(request, 'Captcha could not be verified. Try Again')
             return redirect('/')
-        
-        #Authenticate
-        user = EmailBackend.authenticate(request, username=request.POST.get('email'), password=request.POST.get('password'))
+
+        # Authenticate
+        user = EmailBackend.authenticate(request, username=request.POST.get(
+            'email'), password=request.POST.get('password'))
         if user != None:
             login(request, user)
             if user.user_type == '1':
@@ -59,7 +60,6 @@ def doLogin(request, **kwargs):
         else:
             messages.error(request, "Invalid details")
             return redirect("/")
-
 
 
 def logout_user(request):
@@ -77,9 +77,9 @@ def get_attendance(request):
         attendance_list = []
         for attd in attendance:
             data = {
-                    "id": attd.id,
-                    "attendance_date": str(attd.date)
-                    }
+                "id": attd.id,
+                "attendance_date": str(attd.date)
+            }
             attendance_list.append(data)
         return JsonResponse(json.dumps(attendance_list), safe=False)
     except Exception as e:
