@@ -35,14 +35,17 @@
                                     <td>{{manager.gender}}</td>
                                     <td>{{manager.manager.division.name}}</td>
                                     <td>
-                                        {% if manager.profile_pic == ""  %}
-                                        No Image
+                                        {% if employee.gender == "M" %}
+                                        <img class="img img-fluid rounded-circle" width="70" height="70"
+                                            src="{% static 'images/avatars/man.jpg' %}" alt="Male Avatar">
                                         {% else %}
-                                        <img class="img img-fluid mb-2" height="100" width="100"
-                                            src="{{manager.profile_pic}}" alt="">
+                                        <img class="img img-fluid rounded-circle" width="70" height="70"
+                                            src="{% static 'images/avatars/woman.png' %}" alt="Female Avatar">
                                         {% endif %}
                                     </td>
-                                    <td><button data-toggle = "modal" data-target = "#myModal"class="btn btn-primary show_notification" value="{{manager.id}}">Send Notification</button> 
+                                    <td><button data-toggle="modal" data-target="#myModal"
+                                            class="btn btn-primary show_notification" value="{{manager.id}}">Send
+                                            Notification</button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -54,74 +57,73 @@
         </div>
     </div>
 </section>
-<div class = "modal fade" id = "myModal" tabindex = "-1" role = "dialog" 
-   aria-labelledby = "myModalLabel" aria-hidden = "true">
-   
-   <div class = "modal-dialog">
-      <div class = "modal-content">
-         
-         <div class = "modal-header">Send Notification
-            <button type = "button" class = "close" data-dismiss = "modal" aria-hidden = "true">
-                  &times;
-            </button>
-            
-           
-         </div>
-         
-         <div class = "modal-body">
-            <div class="form-group">
-                <input type="text" id="message" class='form-control'>
-                <input type="hidden"  id="manager_id" class='form-control'>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">Send Notification
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+
+
             </div>
-         </div>
-         
-         <div class = "modal-footer">
-            <button type = "button" class = "btn btn-default" data-dismiss = "modal">
-               Close
-            </button>
-            
-            <button type = "button" id='send' class = "btn btn-success send_notification">
-               Send Notification
-            </button>
-         </div>
-         
-      </div><!-- /.modal-content -->
-   </div><!-- /.modal-dialog -->
-  
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" id="message" class='form-control'>
+                    <input type="hidden" id="manager_id" class='form-control'>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button" id='send' class="btn btn-success send_notification">
+                    Send Notification
+                </button>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+
 </div><!-- /.modal -->
 {% endblock content %}
 {% block custom_js %}
-  <script>
-      $(".show_notification").click(function(){
-          $("#manager_id").val($(this).val())
-      })
-      $(".send_notification").click(function(){
-          var id = $("#manager_id").val()
-          var message = $("#message").val()
-          sendNotification(id,message);
-      })
-    function sendNotification(id,message){
+<script>
+    $(".show_notification").click(function () {
+        $("#manager_id").val($(this).val())
+    })
+    $(".send_notification").click(function () {
+        var id = $("#manager_id").val()
+        var message = $("#message").val()
+        sendNotification(id, message);
+    })
+    function sendNotification(id, message) {
         $.ajax({
             url: "{% url 'send_manager_notification' %}",
             type: 'POST',
             data: {
                 id: id,
-                message:message
+                message: message
             }
         }).done(function (response) {
-           
-          if (response == 'True'){
-            alert("Notification Sent");
-            location.reload();
-          }else{
-            alert("Notification could not be saved. Please try again.");
-          }
-           
+
+            if (response == 'True') {
+                alert("Notification Sent");
+                location.reload();
+            } else {
+                alert("Notification could not be saved. Please try again.");
+            }
+
         }).fail(function (response) {
             alert("Error in saving token")
         })
 
     }
 
-  </script>
+</script>
 {% endblock custom_js %}
