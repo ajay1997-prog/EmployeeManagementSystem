@@ -25,7 +25,8 @@ def admin_home(request):
     attendance_list = []
     department_list = []
     for department in departments:
-        attendance_count = Attendance.objects.filter(department=department).count()
+        attendance_count = Attendance.objects.filter(
+            department=department).count()
         department_list.append(department.name[:7])
         attendance_list.append(attendance_count)
     context = {
@@ -237,8 +238,6 @@ def edit_manager(request, manager_id):
         else:
             messages.error(request, "Please fil form properly")
     else:
-        user = CustomUser.objects.get(id=manager_id)
-        manager = Manager.objects.get(id=user.id)
         return render(request, "ceo_template/edit_manager_template.html", context)
 
 
@@ -462,7 +461,8 @@ def get_admin_attendance(request):
     try:
         department = get_object_or_404(Department, id=department_id)
         attendance = get_object_or_404(Attendance, id=attendance_date_id)
-        attendance_reports = AttendanceReport.objects.filter(attendance=attendance)
+        attendance_reports = AttendanceReport.objects.filter(
+            attendance=attendance)
         json_data = []
         for report in attendance_reports:
             data = {
