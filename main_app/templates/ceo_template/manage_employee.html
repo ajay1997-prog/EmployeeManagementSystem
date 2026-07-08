@@ -37,16 +37,21 @@
                                     <td>{{employee.employee.division.name}}</td>
                                     <td>{{employee.employee.department.name}}</td>
                                     <td>
-                                        {% if employee.profile_pic == ""  %}
-                                        No Image
+
+                                        {% if employee.gender == "M" %}
+                                        <img class="img img-fluid rounded-circle" height="70" width="70"
+                                            src="{% static 'images/avatars/man.jpg' %}" alt="Male Avatar">
                                         {% else %}
-                                        <img class="img img-fluid mb-2" height="100" width="100"
-                                            src="{{employee.profile_pic}}" alt="">
+                                        <img class="img img-fluid rounded-circle" height="70" width="70"
+                                            src="{% static 'images/avatars/woman.png' %}" alt="Female Avatar">
                                         {% endif %}
                                     </td>
-                                    
-                                    <td><a href="{% url 'edit_employee' employee.employee.id %}" class="btn btn-primary">Edit</a> -
-                                        <a href="{% url 'delete_employee' employee.employee.id %}" class="btn btn-danger" onclick="return confirm('Are you sure about this ?')">Delete</a>
+
+                                    <td><a href="{% url 'edit_employee' employee.employee.id %}"
+                                            class="btn btn-primary">Edit</a> -
+                                        <a href="{% url 'delete_employee' employee.employee.id %}"
+                                            class="btn btn-danger"
+                                            onclick="return confirm('Are you sure about this ?')">Delete</a>
 
                                     </td>
                                 </tr>
