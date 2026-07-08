@@ -168,11 +168,17 @@ def manage_manager(request):
 
 
 def manage_employee(request):
-    employees = CustomUser.objects.filter(user_type=3)
+    employees = CustomUser.objects.filter(user_type=3).select_related(
+        "employee",
+        "employee__division",
+        "employee__department"
+    )
+
     context = {
-        'employees': employees,
-        'page_title': 'Manage Employees'
+        "employees": employees,
+        "page_title": "Manage Employees"
     }
+
     return render(request, "ceo_template/manage_employee.html", context)
 
 
