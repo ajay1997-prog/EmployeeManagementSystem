@@ -18,21 +18,23 @@
                         <table class="table table-bordered">
                             <tr>
                                 <th>SN</th>
-                                <th>Manager</th>
-                                <th>Division</th>
-                                <th>Message</th>
-                                <th>Leave Date</th>
-                                <th>Submitted On</th>
-                                <th>Action</th>
-
+                               <th>Manager</th>
+<th>Division</th>
+<th>Duration</th>
+<th>Leave Details</th>
+<th>Submitted On</th>
+<th>Status</th>
                             </tr>
                             {% for leave in  allLeave %}
                               <tr>
                                   <td>{{forloop.counter}}</td>
                                   <td>{{leave.manager}}</td>
                                   <td>{{leave.manager.division}}</td>
-                                  <td>{{leave.message}}</td>
-                                  <td>{{leave.date}}</td>
+                                  <td>{{ leave.date }}</td>
+
+<td style="white-space: pre-line;">
+    {{ leave.message }}
+</td>
                                   <td>{{leave.created_at}}</td>
                                  
                                       

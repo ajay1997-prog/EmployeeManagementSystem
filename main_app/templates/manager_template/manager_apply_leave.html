@@ -24,15 +24,18 @@
        <table class="table table-bordered">
            <tr>
                <th>ID</th>
-               <th>Date</th>
-               <th>Message</th>
+               <th>Duration</th>
+<th>Leave Details</th>
             <th>Status</th>
         </tr>
         {% for leave in leave_history %}
         <tr>
             <td>{{forloop.counter}}</td>
-            <td>{{leave.date}}</td>
-              <td>{{leave.message}}</td>
+            <td>{{ leave.date }}</td>
+
+<td style="white-space: pre-line;">
+    {{ leave.message }}
+</td>
               <td>
                   
                   {% if leave.status == 0 %}

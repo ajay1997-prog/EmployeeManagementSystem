@@ -126,16 +126,55 @@ class DepartmentForm(FormSettings):
         fields = ['name', 'division']
 
 
-class LeaveReportManagerForm(FormSettings):
-    def __init__(self, *args, **kwargs):
-        super(LeaveReportManagerForm, self).__init__(*args, **kwargs)
+class LeaveReportManagerForm(forms.ModelForm):
+
+    LEAVE_TYPES = [
+        ('Casual Leave', 'Casual Leave'),
+        ('Sick Leave', 'Sick Leave'),
+        ('Earned Leave', 'Earned Leave'),
+        ('Emergency Leave', 'Emergency Leave'),
+        ('Work From Home', 'Work From Home'),
+        ('Marriage Leave', 'Marriage Leave'),
+        ('Comp Off', 'Comp Off'),
+        ('Half Day', 'Half Day'),
+        ('Leave Without Pay', 'Leave Without Pay'),
+        ('Other', 'Other'),
+    ]
+
+    leave_type = forms.ChoiceField(
+        choices=LEAVE_TYPES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    from_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+
+    to_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
     class Meta:
         model = LeaveReportManager
-        fields = ['date', 'message']
+        fields = ['leave_type', 'from_date', 'to_date', 'message']
         widgets = {
-            'date': DateInput(attrs={'type': 'date'}),
+            'message': forms.Textarea(attrs={'class': 'form-control'})
         }
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        obj.date = f"{self.cleaned_data['from_date']} to {self.cleaned_data['to_date']}"
+
+        obj.message = (
+            f"Leave Type: {self.cleaned_data['leave_type']}\n\n"
+            f"{self.cleaned_data['message']}"
+        )
+
+        if commit:
+            obj.save()
+
+        return obj
 
 
 class FeedbackManagerForm(FormSettings):
@@ -148,17 +187,57 @@ class FeedbackManagerForm(FormSettings):
         fields = ['feedback']
 
 
-class LeaveReportEmployeeForm(FormSettings):
-    def __init__(self, *args, **kwargs):
-        super(LeaveReportEmployeeForm, self).__init__(*args, **kwargs)
+class LeaveReportEmployeeForm(forms.ModelForm):
+
+    LEAVE_TYPES = [
+        ('Casual Leave', 'Casual Leave'),
+        ('Sick Leave', 'Sick Leave'),
+        ('Earned Leave', 'Earned Leave'),
+        ('Emergency Leave', 'Emergency Leave'),
+        ('Work From Home', 'Work From Home'),
+        ('Marriage Leave', 'Marriage Leave'),
+        ('Comp Off', 'Comp Off'),
+        ('Half Day', 'Half Day'),
+        ('Leave Without Pay', 'Leave Without Pay'),
+        ('Other', 'Other'),
+    ]
+
+    leave_type = forms.ChoiceField(
+        choices=LEAVE_TYPES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    from_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+
+    to_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
     class Meta:
         model = LeaveReportEmployee
-        fields = ['date', 'message']
+        fields = ['leave_type', 'from_date', 'to_date', 'message']
         widgets = {
-            'date': DateInput(attrs={'type': 'date'}),
+            'message': forms.Textarea(attrs={'class': 'form-control'})
         }
 
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        # Save both dates into the existing "date" field
+        obj.date = f"{self.cleaned_data['from_date']} to {self.cleaned_data['to_date']}"
+
+        # Save leave type together with the message
+        obj.message = (
+            f"Leave Type: {self.cleaned_data['leave_type']}\n\n"
+            f"{self.cleaned_data['message']}"
+        )
+
+        if commit:
+            obj.save()
+
+        return obj
 
 class FeedbackEmployeeForm(FormSettings):
 

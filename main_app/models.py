@@ -6,6 +6,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
+
 class CustomUserManager(UserManager):
     def _create_user(self, email, password, **extra_fields):
         email = self.normalize_email(email)
@@ -143,9 +144,9 @@ class AttendanceReport(models.Model):
     )
 
     check_in_time = models.TimeField(
-    null=True,
-    blank=True
-)
+        auto_now_add=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
