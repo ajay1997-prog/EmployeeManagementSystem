@@ -1,3 +1,6 @@
+from django.utils import timezone
+from datetime import date
+from django.http import JsonResponse
 import json
 import math
 from math import radians, sin, cos, sqrt, atan2
@@ -17,33 +20,65 @@ from .models import *
 
 def employee_home(request):
     employee = get_object_or_404(Employee, admin=request.user)
-    total_department = Department.objects.filter(division=employee.division).count()
-    total_attendance = AttendanceReport.objects.filter(employee=employee).count()
-    total_present = AttendanceReport.objects.filter(employee=employee, status=True).count()
-    if total_attendance == 0:  # Don't divide. DivisionByZero
-        percent_absent = percent_present = 0
+
+    total_department = Department.objects.filter(
+        division=employee.division
+    ).count()
+
+    total_attendance = AttendanceReport.objects.filter(
+        employee=employee
+    ).count()
+
+    total_present = AttendanceReport.objects.filter(
+        employee=employee,
+        status=True
+    ).count()
+
+    if total_attendance == 0:
+        percent_present = 0
+        percent_absent = 0
     else:
-        percent_present = math.floor((total_present/total_attendance) * 100)
+        percent_present = math.floor((total_present / total_attendance) * 100)
         percent_absent = math.ceil(100 - percent_present)
+
     department_name = []
     data_present = []
     data_absent = []
-    departments = Department.objects.filter(division=employee.division)
+
+    departments = Department.objects.filter(
+        division=employee.division
+    )
+
     for department in departments:
-        attendance = Attendance.objects.filter(department=department)
+        attendance = Attendance.objects.filter(
+            department=department
+        )
+
         present_count = AttendanceReport.objects.filter(
-            attendance__in=attendance, status=True, employee=employee).count()
+            attendance__in=attendance,
+            status=True,
+            employee=employee
+        ).count()
+
         absent_count = AttendanceReport.objects.filter(
-            attendance__in=attendance, status=False, employee=employee).count()
+            attendance__in=attendance,
+            status=False,
+            employee=employee
+        ).count()
+
         department_name.append(department.name)
         data_present.append(present_count)
         data_absent.append(absent_count)
-        notification_count = NotificationEmployee.objects.filter(
-    employee=employee,
-    is_read=False
-).count()
+
+    # Unread Notifications Count
+    notification_count = NotificationEmployee.objects.filter(
+        employee=employee,
+        is_read=False
+    ).count()
+
+    print("Unread Notifications:", notification_count)
+
     context = {
-        
         'total_attendance': total_attendance,
         'percent_present': percent_present,
         'percent_absent': percent_absent,
@@ -54,13 +89,16 @@ def employee_home(request):
         'data_name': department_name,
         'notification_count': notification_count,
         'page_title': 'Employee Homepage'
-
     }
-    print(notification_count)
-    return render(request, 'employee_template/home_content.html', context)
+
+    return render(
+        request,
+        'employee_template/home_content.html',
+        context
+    )
 
 
-@ csrf_exempt
+@csrf_exempt
 def employee_view_attendance(request):
     employee = get_object_or_404(Employee, admin=request.user)
     if request.method != 'POST':
@@ -156,6 +194,8 @@ def employee_view_profile(request):
         "employee_template/employee_view_profile.html",
         context
     )
+
+
 @csrf_exempt
 def employee_fcmtoken(request):
     token = request.POST.get('token')
@@ -187,6 +227,7 @@ def employee_view_notification(request):
         context
     )
 
+
 def employee_view_salary(request):
     employee = get_object_or_404(Employee, admin=request.user)
     salarys = EmployeeSalary.objects.filter(employee=employee)
@@ -196,10 +237,6 @@ def employee_view_salary(request):
     }
     return render(request, "employee_template/employee_view_salary.html", context)
 
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from datetime import date
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in KM
@@ -217,6 +254,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     return R * c
+
 
 @csrf_exempt
 def mark_attendance(request):
