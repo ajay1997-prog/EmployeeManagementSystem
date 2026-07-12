@@ -121,10 +121,19 @@
 
                 </li>
                 
-                <li class="nav-item has-treeview">
+                {% url 'add_division' as add_division %}
+{% url 'manage_division' as manage_division %}
+{% url 'edit_division' division_id as edit_division %}
 
-    <a href="#" class="nav-link">
+{% url 'add_department' as add_department %}
+{% url 'manage_department' as manage_department %}
+{% url 'edit_department' department_id as edit_department %}
+
+<li class="nav-item has-treeview {% if add_division == request.path or manage_division == request.path or request.path == edit_division or add_department == request.path or manage_department == request.path or request.path == edit_department %}menu-open{% endif %}">
+
+    <a href="#" class="nav-link {% if add_division == request.path or manage_division == request.path or request.path == edit_division or add_department == request.path or manage_department == request.path or request.path == edit_department %}active{% endif %}">
         <i class="nav-icon fas fa-building"></i>
+
         <p>
             Organization
             <i class="right fas fa-angle-left"></i>
@@ -134,16 +143,34 @@
     <ul class="nav nav-treeview">
 
         <li class="nav-item">
-            <a href="{% url 'manage_division' %}" class="nav-link">
+            <a href="{{ add_division }}"
+               class="nav-link {% if add_division == request.path %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Divisions</p>
+                <p>Add Division</p>
             </a>
         </li>
 
         <li class="nav-item">
-            <a href="{% url 'manage_department' %}" class="nav-link">
+            <a href="{{ manage_division }}"
+               class="nav-link {% if manage_division == request.path or request.path == edit_division %}active{% endif %}">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Departments</p>
+                <p>Manage Divisions</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ add_department }}"
+               class="nav-link {% if add_department == request.path %}active{% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Add Department</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ manage_department }}"
+               class="nav-link {% if manage_department == request.path or request.path == edit_department %}active{% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Manage Departments</p>
             </a>
         </li>
 
