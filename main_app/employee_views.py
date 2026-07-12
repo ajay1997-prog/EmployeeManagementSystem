@@ -1,5 +1,6 @@
 import json
 import math
+from math import radians, sin, cos, sqrt, atan2
 from datetime import datetime
 
 from django.contrib import messages
@@ -184,6 +185,23 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from datetime import date
 
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius in KM
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+
+    a = (
+        sin(dlat / 2) ** 2
+        + cos(radians(lat1))
+        * cos(radians(lat2))
+        * sin(dlon / 2) ** 2
+    )
+
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
+
 @csrf_exempt
 def mark_attendance(request):
     if request.method != "POST":
@@ -211,15 +229,23 @@ def mark_attendance(request):
     latitude = float(request.POST.get("latitude"))
     longitude = float(request.POST.get("longitude"))
 
-    # Hyderabad Office Coordinates
+   # Hyderabad Office Coordinates
     OFFICE_LAT = 17.385044
     OFFICE_LON = 78.486671
 
-    # Very basic range check (we'll improve this later)
-    if abs(latitude - OFFICE_LAT) > 0.01 or abs(longitude - OFFICE_LON) > 0.01:
+    # Calculate distance from Hyderabad office
+    distance = calculate_distance(
+        latitude,
+        longitude,
+        OFFICE_LAT,
+        OFFICE_LON
+    )
+
+    # Allow attendance within 10 KM
+    if distance > 10:
         return JsonResponse({
             "status": False,
-            "message": "You are not at Hyderabad Office."
+            "message": f"You are {distance:.2f} KM away from Hyderabad Office."
         })
 
     attendance, created = Attendance.objects.get_or_create(
