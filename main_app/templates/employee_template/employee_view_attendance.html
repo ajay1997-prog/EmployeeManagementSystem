@@ -40,6 +40,22 @@
                     <!-- /.card-header -->
                     <!-- form start -->
                     <div class="card-body">
+                        <div class="alert alert-info text-center">
+
+    <h4>Today's Attendance</h4>
+
+    <button class="btn btn-success"
+            id="mark_attendance">
+        📍 Mark Attendance
+    </button>
+
+    <br><br>
+
+    <span id="attendance_status"></span>
+
+</div>
+
+<hr>
 
 
 
@@ -88,54 +104,142 @@
 
 {% block custom_js %}
 <script>
-    $(document).ready(function () {
+$(document).ready(function () {
 
-       
-        $("#fetch_attendance").click(function () {
-            var department = $("#department").val()
-            var start_date = $("#start_date").val()
-            var end_date = $("#end_date").val()
-            if (department.length  == 0 || end_date.length ==0 ||start_date.length == 0){
-                alert("Please Select Department and Date Range");
-                return false;
+    // ================= Fetch Attendance =================
+
+    $("#fetch_attendance").click(function () {
+
+        var department = $("#department").val()
+        var start_date = $("#start_date").val()
+        var end_date = $("#end_date").val()
+
+        if (department.length == 0 || end_date.length == 0 || start_date.length == 0) {
+            alert("Please Select Department and Date Range");
+            return false;
+        }
+
+        $("#attendance_data").html(null)
+
+        $.ajax({
+
+            url: "{% url 'employee_view_attendance' %}",
+
+            type: 'POST',
+
+            data: {
+                department: department,
+                start_date: start_date,
+                end_date: end_date
             }
-            $("#attendance_data").html(null)
-            $.ajax({
-                url: "{% url 'employee_view_attendance' %}",
-                type: 'POST',
-                data: {
-                    department: department,
-                    start_date: start_date,
-                    end_date:end_date
-                }
-            }).done(function (response) {
-                var json_data = JSON.parse(response)
-                if (json_data.length < 1) {
-                    $("#attendance_data").html("<div class='col-md-12 alert alert-danger'>No Data For Specified Parameters</div>")
 
-                } else {
-                    var div_data = ""
-                         
-                    for (key in json_data) {
-                    if (json_data[key]['status']){
-                        div_data += "<div class='col-lg-3 attendance_div_green'><b>"+ json_data[key]['date'] + "</b><br/>Present</div>" 
-                    }else{
+        }).done(function (response) {
 
-                        div_data += "<div class='col-lg-3 attendance_div_red'><b>"+ json_data[key]['date'] + "</b><br/>Absent</div>"
+            var json_data = JSON.parse(response)
+
+            if (json_data.length < 1) {
+
+                $("#attendance_data").html("<div class='col-md-12 alert alert-danger'>No Data For Specified Parameters</div>");
+
+            } else {
+
+                var div_data = "";
+
+                for (key in json_data) {
+
+                    if (json_data[key]['status']) {
+
+                        div_data += "<div class='col-lg-3 attendance_div_green'><b>" + json_data[key]['date'] + "</b><br/>Present</div>";
+
+                    } else {
+
+                        div_data += "<div class='col-lg-3 attendance_div_red'><b>" + json_data[key]['date'] + "</b><br/>Absent</div>";
+
                     }
-                }
-                    div_data += ""
-                    $("#attendance_data").html(div_data)
 
                 }
-            }).fail(function (response) {
-                $("#attendance_data").html("Error While Fetching Records")
-            })
+
+                $("#attendance_data").html(div_data);
+
+            }
+
+        }).fail(function () {
+
+            $("#attendance_data").html("Error While Fetching Records");
+
+        });
+
+    });
 
 
-          
+    // ================= Mark Attendance =================
 
-        })
-    })
+    $("#mark_attendance").click(function () {
+
+        if (!navigator.geolocation) {
+            alert("Your browser doesn't support Location.");
+            return;
+        }
+
+        $("#attendance_status").html("<b>Getting your location...</b>");
+
+        navigator.geolocation.getCurrentPosition(
+
+            function(position){
+
+                $.ajax({
+
+                    url: "{% url 'mark_attendance' %}",
+
+                    type: "POST",
+
+                    data: {
+
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+
+                    },
+
+                    success:function(response){
+
+                        if(response.status){
+
+                            $("#attendance_status").html(
+                                "<span class='text-success'><b>"+response.message+"</b></span>"
+                            );
+
+                        }else{
+
+                            $("#attendance_status").html(
+                                "<span class='text-danger'><b>"+response.message+"</b></span>"
+                            );
+
+                        }
+
+                    },
+
+                    error:function(){
+
+                        $("#attendance_status").html(
+                            "<span class='text-danger'><b>Server Error</b></span>"
+                        );
+
+                    }
+
+                });
+
+            },
+
+            function(){
+
+                alert("Location Permission Denied.");
+
+            }
+
+        );
+
+    });
+
+});
 </script>
 {% endblock custom_js %}

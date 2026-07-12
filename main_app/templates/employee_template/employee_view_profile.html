@@ -1,39 +1,135 @@
 {% extends 'main_app/base.html' %}
 {% load static %}
-{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
 
 <section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <!-- general form elements -->
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">{{page_title}}</h3>
-                    </div>
+<div class="container-fluid">
 
-                    {% include "main_app/form_template.html" with messages=messages  form=form button_text="Update Profile"%}
-                </div>
-                <!-- /.card -->
+<div class="card card-primary">
 
-            </div>
-        </div>
-    </div>
+<div class="card-header">
+<h3 class="card-title">My Profile</h3>
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<tr>
+<th>Employee Code</th>
+<td>{{ employee.employee_code }}</td>
+</tr>
+
+<tr>
+<th>First Name</th>
+<td>{{ employee.admin.first_name }}</td>
+</tr>
+
+<tr>
+<th>Last Name</th>
+<td>{{ employee.admin.last_name }}</td>
+</tr>
+
+<tr>
+<th>Email</th>
+<td>{{ employee.admin.email }}</td>
+</tr>
+
+<tr>
+<th>Gender</th>
+<td>{{ employee.admin.get_gender_display }}</td>
+</tr>
+
+<tr>
+<th>Date of Birth</th>
+<td>{{ employee.date_of_birth }}</td>
+</tr>
+
+<tr>
+<th>Father Name</th>
+<td>{{ employee.father_name }}</td>
+</tr>
+
+<tr>
+<th>Mother Name</th>
+<td>{{ employee.mother_name }}</td>
+</tr>
+
+<tr>
+<th>Native Place</th>
+<td>{{ employee.native_place }}</td>
+</tr>
+
+<tr>
+<th>Phone Number</th>
+<td>{{ employee.phone_number }}</td>
+</tr>
+
+<tr>
+<th>Emergency Contact</th>
+<td>{{ employee.emergency_contact }}</td>
+</tr>
+
+<tr>
+<th>Address</th>
+<td>{{ employee.admin.address }}</td>
+</tr>
+
+<tr>
+<th>Division</th>
+<td>{{ employee.division }}</td>
+</tr>
+
+<tr>
+<th>Department</th>
+<td>{{ employee.department }}</td>
+</tr>
+
+<tr>
+<th>Designation</th>
+<td>{{ employee.designation }}</td>
+</tr>
+
+<tr>
+<th>Branch</th>
+<td>{{ employee.branch }}</td>
+</tr>
+
+<tr>
+<th>Joining Date</th>
+<td>{{ employee.joining_date }}</td>
+</tr>
+
+<tr>
+<th>Bank Name</th>
+<td>{{ employee.bank_name }}</td>
+</tr>
+
+<tr>
+<th>Account Number</th>
+<td>{{ employee.account_number }}</td>
+</tr>
+
+<tr>
+<th>IFSC Code</th>
+<td>{{ employee.ifsc_code }}</td>
+</tr>
+
+<tr>
+<th>PF Number</th>
+<td>{{ employee.pf_number }}</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
 </section>
-{% endblock content %}
 
-{% block custom_js %}
-  <script>
-      $(document).ready(function(){
-            var ifNotfied = false;
-          $("#id_password").on("change", function(){
-              if (!ifNotfied){
-                ifNotfied = true;
-                alert("After a successful profile update:\n\nYour session would be terminated\nYou would be required to login again")
-              }
-          })
-      })
-  </script>
-{% endblock custom_js %}
+{% endblock %}

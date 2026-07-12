@@ -46,13 +46,15 @@ class CustomUserForm(FormSettings):
                 id=self.instance.pk).admin.email.lower()
             if dbEmail != formEmail:  # There has been changes
                 if CustomUser.objects.filter(email=formEmail).exists():
-                    raise forms.ValidationError("The given email is already registered")
+                    raise forms.ValidationError(
+                        "The given email is already registered")
 
         return formEmail
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'gender',  'password','profile_pic', 'address' ]
+        fields = ['first_name', 'last_name', 'email',
+                  'gender',  'password', 'profile_pic', 'address']
 
 
 class EmployeeForm(CustomUserForm):
@@ -61,8 +63,29 @@ class EmployeeForm(CustomUserForm):
 
     class Meta(CustomUserForm.Meta):
         model = Employee
-        fields = CustomUserForm.Meta.fields + \
-            ['division', 'department']
+        fields = CustomUserForm.Meta.fields + [
+            'division',
+            'department',
+            'employee_code',
+            'designation',
+            'branch',
+            'joining_date',
+            'date_of_birth',
+            'father_name',
+            'mother_name',
+            'native_place',
+            'phone_number',
+            'emergency_contact',
+            'bank_name',
+            'account_number',
+            'ifsc_code',
+            'pf_number',
+        ]
+
+        widgets = {
+            'joining_date': forms.DateInput(attrs={'type': 'date'}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 
 class AdminForm(CustomUserForm):
@@ -81,7 +104,7 @@ class ManagerForm(CustomUserForm):
     class Meta(CustomUserForm.Meta):
         model = Manager
         fields = CustomUserForm.Meta.fields + \
-            ['division' ]
+            ['division']
 
 
 class DivisionForm(FormSettings):
@@ -153,7 +176,7 @@ class EmployeeEditForm(CustomUserForm):
 
     class Meta(CustomUserForm.Meta):
         model = Employee
-        fields = CustomUserForm.Meta.fields 
+        fields = CustomUserForm.Meta.fields
 
 
 class ManagerEditForm(CustomUserForm):

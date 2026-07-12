@@ -137,44 +137,17 @@ def employee_feedback(request):
 
 def employee_view_profile(request):
     employee = get_object_or_404(Employee, admin=request.user)
-    form = EmployeeEditForm(request.POST or None, request.FILES or None,
-                           instance=employee)
-    context = {'form': form,
-               'page_title': 'View/Edit Profile'
-               }
-    if request.method == 'POST':
-        try:
-            if form.is_valid():
-                first_name = form.cleaned_data.get('first_name')
-                last_name = form.cleaned_data.get('last_name')
-                password = form.cleaned_data.get('password') or None
-                address = form.cleaned_data.get('address')
-                gender = form.cleaned_data.get('gender')
-                passport = request.FILES.get('profile_pic') or None
-                admin = employee.admin
-                if password != None:
-                    admin.set_password(password)
-                if passport != None:
-                    fs = FileSystemStorage()
-                    filename = fs.save(passport.name, passport)
-                    passport_url = fs.url(filename)
-                    admin.profile_pic = passport_url
-                admin.first_name = first_name
-                admin.last_name = last_name
-                admin.address = address
-                admin.gender = gender
-                admin.save()
-                employee.save()
-                messages.success(request, "Profile Updated!")
-                return redirect(reverse('employee_view_profile'))
-            else:
-                messages.error(request, "Invalid Data Provided")
-        except Exception as e:
-            messages.error(request, "Error Occured While Updating Profile " + str(e))
 
-    return render(request, "employee_template/employee_view_profile.html", context)
+    context = {
+        "employee": employee,
+        "page_title": "My Profile"
+    }
 
-
+    return render(
+        request,
+        "employee_template/employee_view_profile.html",
+        context
+    )
 @csrf_exempt
 def employee_fcmtoken(request):
     token = request.POST.get('token')
@@ -205,3 +178,65 @@ def employee_view_salary(request):
         'page_title': "View Salary"
     }
     return render(request, "employee_template/employee_view_salary.html", context)
+
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from datetime import date
+
+@csrf_exempt
+def mark_attendance(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "status": False,
+            "message": "Invalid Request"
+        })
+
+    employee = Employee.objects.get(admin=request.user)
+
+    today = date.today()
+
+    # Already marked?
+    existing = AttendanceReport.objects.filter(
+        employee=employee,
+        attendance__date=today
+    ).exists()
+
+    if existing:
+        return JsonResponse({
+            "status": False,
+            "message": "Attendance already marked today."
+        })
+
+    latitude = float(request.POST.get("latitude"))
+    longitude = float(request.POST.get("longitude"))
+
+    # Hyderabad Office Coordinates
+    OFFICE_LAT = 17.385044
+    OFFICE_LON = 78.486671
+
+    # Very basic range check (we'll improve this later)
+    if abs(latitude - OFFICE_LAT) > 0.01 or abs(longitude - OFFICE_LON) > 0.01:
+        return JsonResponse({
+            "status": False,
+            "message": "You are not at Hyderabad Office."
+        })
+
+    attendance, created = Attendance.objects.get_or_create(
+        department=employee.department,
+        date=today
+    )
+
+    AttendanceReport.objects.create(
+        employee=employee,
+        attendance=attendance,
+        status=True,
+        attendance_type="Self",
+        location="Hyderabad Office",
+        check_in_time=timezone.now().time()
+    )
+
+    return JsonResponse({
+        "status": True,
+        "message": "Attendance marked successfully."
+    })

@@ -89,6 +89,24 @@ def add_employee(request):
             password = employee_form.cleaned_data.get('password')
             division = employee_form.cleaned_data.get('division')
             department = employee_form.cleaned_data.get('department')
+            date_of_birth = employee_form.cleaned_data.get('date_of_birth')
+            father_name = employee_form.cleaned_data.get('father_name')
+            mother_name = employee_form.cleaned_data.get('mother_name')
+            native_place = employee_form.cleaned_data.get('native_place')
+
+            employee_code = employee_form.cleaned_data.get('employee_code')
+            designation = employee_form.cleaned_data.get('designation')
+            joining_date = employee_form.cleaned_data.get('joining_date')
+            branch = employee_form.cleaned_data.get('branch')
+
+            phone_number = employee_form.cleaned_data.get('phone_number')
+            emergency_contact = employee_form.cleaned_data.get(
+                'emergency_contact')
+
+            bank_name = employee_form.cleaned_data.get('bank_name')
+            account_number = employee_form.cleaned_data.get('account_number')
+            ifsc_code = employee_form.cleaned_data.get('ifsc_code')
+            pf_number = employee_form.cleaned_data.get('pf_number')
             passport = request.FILES['profile_pic']
             fs = FileSystemStorage()
             filename = fs.save(passport.name, passport)
@@ -100,6 +118,23 @@ def add_employee(request):
                 user.address = address
                 user.employee.division = division
                 user.employee.department = department
+                user.employee.date_of_birth = date_of_birth
+                user.employee.father_name = father_name
+                user.employee.mother_name = mother_name
+                user.employee.native_place = native_place
+
+                user.employee.employee_code = employee_code
+                user.employee.designation = designation
+                user.employee.joining_date = joining_date
+                user.employee.branch = branch
+
+                user.employee.phone_number = phone_number
+                user.employee.emergency_contact = emergency_contact
+
+                user.employee.bank_name = bank_name
+                user.employee.account_number = account_number
+                user.employee.ifsc_code = ifsc_code
+                user.employee.pf_number = pf_number 
                 user.save()
                 messages.success(request, "Successfully Added")
                 return redirect(reverse('add_employee'))

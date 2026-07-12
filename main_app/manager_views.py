@@ -68,32 +68,15 @@ def get_employees(request):
 
 
 @csrf_exempt
-def save_attendance(request):
-    employee_data = request.POST.get('employee_ids')
-    date = request.POST.get('date')
-    department_id = request.POST.get('department')
-    employees = json.loads(employee_data)
-    try:
-        department = get_object_or_404(Department, id=department_id)
 
-        # Check if an attendance object already exists for the given date
-        attendance, created = Attendance.objects.get_or_create(department=department, date=date)
 
-        for employee_dict in employees:
-            employee = get_object_or_404(Employee, id=employee_dict.get('id'))
 
-            # Check if an attendance report already exists for the employee and the attendance object
-            attendance_report, report_created = AttendanceReport.objects.get_or_create(employee=employee, attendance=attendance)
 
-            # Update the status only if the attendance report was newly created
-            if report_created:
-                attendance_report.status = employee_dict.get('status')
-                attendance_report.save()
 
-    except Exception as e:
-        return None
 
-    return HttpResponse("OK")
+
+
+
 
 
 def manager_update_attendance(request):
