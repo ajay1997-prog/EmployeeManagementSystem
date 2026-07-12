@@ -56,6 +56,7 @@ def employee_home(request):
         'page_title': 'Employee Homepage'
 
     }
+    print(notification_count)
     return render(request, 'employee_template/home_content.html', context)
 
 
