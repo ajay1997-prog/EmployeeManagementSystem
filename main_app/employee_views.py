@@ -38,7 +38,12 @@ def employee_home(request):
         department_name.append(department.name)
         data_present.append(present_count)
         data_absent.append(absent_count)
+        notification_count = NotificationEmployee.objects.filter(
+    employee=employee,
+    is_read=False
+).count()
     context = {
+        
         'total_attendance': total_attendance,
         'percent_present': percent_present,
         'percent_absent': percent_absent,
@@ -47,6 +52,7 @@ def employee_home(request):
         'data_present': data_present,
         'data_absent': data_absent,
         'data_name': department_name,
+        'notification_count': notification_count,
         'page_title': 'Employee Homepage'
 
     }
@@ -163,13 +169,22 @@ def employee_fcmtoken(request):
 
 def employee_view_notification(request):
     employee = get_object_or_404(Employee, admin=request.user)
+
     notifications = NotificationEmployee.objects.filter(employee=employee)
+
+    # Mark all notifications as read
+    notifications.update(is_read=True)
+
     context = {
         'notifications': notifications,
         'page_title': "View Notifications"
     }
-    return render(request, "employee_template/employee_view_notification.html", context)
 
+    return render(
+        request,
+        "employee_template/employee_view_notification.html",
+        context
+    )
 
 def employee_view_salary(request):
     employee = get_object_or_404(Employee, admin=request.user)

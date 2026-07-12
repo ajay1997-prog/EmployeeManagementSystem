@@ -25,6 +25,10 @@ def manager_home(request):
         attendance_count = Attendance.objects.filter(department=department).count()
         department_list.append(department.name)
         attendance_list.append(attendance_count)
+        notification_count = NotificationManager.objects.filter(
+    manager=manager,
+    is_read=False
+).count()
     context = {
         'page_title': 'Manager Panel - ' + str(manager.admin.last_name) + ' (' + str(manager.division) + ')',
         'total_employees': total_employees,
@@ -32,7 +36,9 @@ def manager_home(request):
         'total_leave': total_leave,
         'total_department': total_department,
         'department_list': department_list,
+        'notification_count': notification_count,
         'attendance_list': attendance_list
+        
     }
     return render(request, 'manager_template/home_content.html', context)
 
@@ -228,12 +234,22 @@ def manager_fcmtoken(request):
 
 def manager_view_notification(request):
     manager = get_object_or_404(Manager, admin=request.user)
+
     notifications = NotificationManager.objects.filter(manager=manager)
+
+    # Mark all notifications as read
+    notifications.update(is_read=True)
+
     context = {
         'notifications': notifications,
         'page_title': "View Notifications"
     }
-    return render(request, "manager_template/manager_view_notification.html", context)
+
+    return render(
+        request,
+        "manager_template/manager_view_notification.html",
+        context
+    )
 
 
 def manager_add_salary(request):

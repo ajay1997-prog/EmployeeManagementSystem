@@ -252,7 +252,13 @@
     <a href="#" class="nav-link">
         <i class="nav-icon fas fa-bell"></i>
         <p>
-            Notifications
+           Notifications
+
+{% if notification_count > 0 %}
+<span class="badge badge-danger">
+    {{ notification_count }}
+</span>
+{% endif %}
             <i class="right fas fa-angle-left"></i>
         </p>
     </a>
