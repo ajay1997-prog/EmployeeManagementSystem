@@ -96,8 +96,11 @@ urlpatterns = [
          manager_views.get_employees, name='get_employees'),
     path("manager/attendance/fetch/", manager_views.get_employee_attendance,
          name='get_employee_attendance'),
-    #  path("manager/attendance/save/",
-    #      manager_views.save_attendance, name='save_attendance'),
+    path(
+    "manager/attendance/save/",
+    manager_views.save_attendance,
+    name="save_attendance"
+    ),
     path("manager/attendance/update/",
          manager_views.update_attendance, name='update_attendance'),
     path("manager/fcmtoken/", manager_views.manager_fcmtoken,
@@ -134,5 +137,14 @@ urlpatterns = [
     employee_views.mark_attendance,
     name="mark_attendance"
 ),
-
+path(
+    "employee/check-out/",
+    employee_views.check_out,
+    name="check_out"
+),
+path(
+    "employee/attendance-status/",
+    employee_views.attendance_status,
+    name="attendance_status"
+),
 ]

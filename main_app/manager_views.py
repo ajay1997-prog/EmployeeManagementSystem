@@ -1,5 +1,5 @@
 import json
-
+from datetime import date
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
@@ -54,37 +54,133 @@ def manager_take_attendance(request):
     return render(request, 'manager_template/manager_take_attendance.html', context)
 
 
+
+
 @csrf_exempt
 def get_employees(request):
+
     department_id = request.POST.get('department')
+
     try:
+
         department = get_object_or_404(Department, id=department_id)
+
         employees = Employee.objects.filter(department=department)
+
+        today = date.today()
+
         employee_data = []
+
         for employee in employees:
-            data = {
+
+            attendance = AttendanceReport.objects.filter(
+                employee=employee,
+                attendance__date=today
+            ).first()
+
+            if attendance:
+
+                check_in = attendance.check_in_time.strftime("%I:%M %p") if attendance.check_in_time else "-"
+
+                check_out = attendance.check_out_time.strftime("%I:%M %p") if attendance.check_out_time else "-"
+
+                source = attendance.attendance_type
+
+                if attendance.check_out_time:
+                    status = "Completed"
+
+                elif attendance.check_in_time:
+                    status = "Checked In"
+
+                else:
+                    status = "Pending"
+
+            else:
+
+                check_in = "-"
+
+                check_out = "-"
+
+                source = "-"
+
+                status = "Pending"
+
+            employee_data.append({
+
                 "id": employee.id,
-                "name": employee.admin.last_name + " " + employee.admin.first_name
-            }
-            employee_data.append(data)
-        return JsonResponse(json.dumps(employee_data), content_type='application/json', safe=False)
+
+                "name": employee.admin.last_name + " " + employee.admin.first_name,
+
+                "check_in": check_in,
+
+                "check_out": check_out,
+
+                "status": status,
+
+                "source": source
+
+            })
+
+        return JsonResponse(employee_data, safe=False)
+
     except Exception as e:
-        return e
+
+        return JsonResponse({"error": str(e)}, status=500)
+    
+@csrf_exempt
+def save_attendance(request):
+    if request.method != "POST":
+        return HttpResponse("Invalid Request")
+
+    try:
+        employee_data = request.POST.get("employee_ids")
+        attendance_date = request.POST.get("date")
+        department_id = request.POST.get("department")
+
+        employees = json.loads(employee_data)
+
+        department = get_object_or_404(
+            Department,
+            id=department_id
+        )
+
+        # Create attendance record for the department/date if it doesn't exist
+        attendance, created = Attendance.objects.get_or_create(
+            department=department,
+            date=attendance_date
+        )
+
+        for employee_dict in employees:
+
+            employee = get_object_or_404(
+                Employee,
+                id=employee_dict["id"]
+            )
+
+            # Skip if attendance already exists for this employee today
+            if AttendanceReport.objects.filter(
+                employee=employee,
+                attendance=attendance
+            ).exists():
+                continue
+
+            AttendanceReport.objects.create(
+                employee=employee,
+                attendance=attendance,
+                status=employee_dict["status"],
+                attendance_type="Manager",
+                location="Manager Attendance"
+            )
+
+        return HttpResponse("OK")
+
+    except Exception as e:
+        print(e)
+        return HttpResponse("ERR")
 
 
 
 @csrf_exempt
-
-
-
-
-
-
-
-
-
-
-
 def manager_update_attendance(request):
     manager = get_object_or_404(Manager, admin=request.user)
     departments = Department.objects.filter(division=manager.division)

@@ -145,8 +145,12 @@ class AttendanceReport(models.Model):
 
     check_in_time = models.TimeField(
         auto_now_add=True
+        
     )
-
+    check_out_time = models.TimeField(
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

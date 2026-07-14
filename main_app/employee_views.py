@@ -1,5 +1,7 @@
 from django.utils import timezone
 from datetime import date
+from django.conf import settings
+
 from django.http import JsonResponse
 import json
 import math
@@ -99,38 +101,45 @@ def employee_home(request):
 
 
 @csrf_exempt
+@csrf_exempt
 def employee_view_attendance(request):
     employee = get_object_or_404(Employee, admin=request.user)
+
     if request.method != 'POST':
-        division = get_object_or_404(Division, id=employee.division.id)
         context = {
-            'departments': Department.objects.filter(division=division),
             'page_title': 'View Attendance'
         }
-        return render(request, 'employee_template/employee_view_attendance.html', context)
-    else:
-        department_id = request.POST.get('department')
-        start = request.POST.get('start_date')
-        end = request.POST.get('end_date')
-        try:
-            department = get_object_or_404(Department, id=department_id)
-            start_date = datetime.strptime(start, "%Y-%m-%d")
-            end_date = datetime.strptime(end, "%Y-%m-%d")
-            attendance = Attendance.objects.filter(
-                date__range=(start_date, end_date), department=department)
-            attendance_reports = AttendanceReport.objects.filter(
-                attendance__in=attendance, employee=employee)
-            json_data = []
-            for report in attendance_reports:
-                data = {
-                    "date":  str(report.attendance.date),
-                    "status": report.status
-                }
-                json_data.append(data)
-            return JsonResponse(json.dumps(json_data), safe=False)
-        except Exception as e:
-            return None
+        return render(
+            request,
+            'employee_template/employee_view_attendance.html',
+            context
+        )
 
+    try:
+        attendance_reports = AttendanceReport.objects.filter(
+            employee=employee
+        ).order_by('-attendance__date')
+
+        json_data = []
+
+        for report in attendance_reports:
+            data = {
+                "date": report.attendance.date.strftime("%d %b %Y"),
+
+                "check_in": report.check_in_time.strftime("%I:%M %p")
+                if report.check_in_time else "-",
+               "check_out": report.check_out_time.strftime("%I:%M %p")
+if report.check_out_time else "-",
+                "status": "Present" if report.status else "Absent",
+                "marked_by": report.attendance_type
+            }
+            json_data.append(data)
+
+        return JsonResponse(json.dumps(json_data), safe=False)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse(json.dumps([]), safe=False)
 
 def employee_apply_leave(request):
     form = LeaveReportEmployeeForm(request.POST or None)
@@ -313,10 +322,85 @@ def mark_attendance(request):
         status=True,
         attendance_type="Self",
         location="Hyderabad Office",
-        check_in_time=timezone.now().time()
-    )
+
+check_in_time = timezone.localtime().time()    )
 
     return JsonResponse({
         "status": True,
         "message": "Attendance marked successfully."
     })
+
+@csrf_exempt
+def check_out(request):
+
+    if request.method != "POST":
+        return JsonResponse({
+            "status": False,
+            "message": "Invalid Request"
+        })
+
+    employee = get_object_or_404(Employee, admin=request.user)
+
+    today = date.today()
+
+    try:
+
+        attendance_report = AttendanceReport.objects.get(
+            employee=employee,
+            attendance__date=today
+        )
+
+        if attendance_report.check_out_time:
+            return JsonResponse({
+                "status": False,
+                "message": "You have already checked out today."
+            })
+        print("TIME_ZONE =", settings.TIME_ZONE)
+        print("CURRENT TZ =", timezone.get_current_timezone())
+        attendance_report.check_out_time = timezone.localtime().time()
+        print("TIMEZONE NOW :", timezone.now())
+        print("LOCAL TIME   :", timezone.localtime())
+        print("LOCAL TIME() :", timezone.localtime().time())
+        
+        attendance_report.save()
+        attendance_report.refresh_from_db()
+        print("Saved checkout:", attendance_report.check_out_time)
+        return JsonResponse({
+            "status": True,
+            "message": "Checked out successfully."
+        })
+
+    except AttendanceReport.DoesNotExist:
+
+        return JsonResponse({
+            "status": False,
+            "message": "Please check in first."
+        })
+        
+@csrf_exempt
+def attendance_status(request):
+
+    employee = get_object_or_404(Employee, admin=request.user)
+
+    today = date.today()
+
+    try:
+
+        report = AttendanceReport.objects.get(
+            employee=employee,
+            attendance__date=today
+        )
+
+        return JsonResponse({
+            "checked_in": True,
+            "checked_out": True if report.check_out_time else False,
+            "check_in": report.check_in_time.strftime("%I:%M %p"),
+            "check_out": report.check_out_time.strftime("%I:%M %p") if report.check_out_time else "-"
+        })
+
+    except AttendanceReport.DoesNotExist:
+
+        return JsonResponse({
+            "checked_in": False,
+            "checked_out": False
+        })

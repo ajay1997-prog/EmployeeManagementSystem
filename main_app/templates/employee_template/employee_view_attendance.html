@@ -31,7 +31,7 @@
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
                 <!-- general form elements -->
                 <div class="card card-primary">
                     <!-- <div class="card-header"> -->
@@ -40,64 +40,85 @@
                     <!-- /.card-header -->
                     <!-- form start -->
                     <div class="card-body">
-                        <div class="alert alert-info text-center">
+<div class="card shadow-sm">
 
-    <h4>Today's Attendance</h4>
+    <div class="card-body text-center">
 
-    <button class="btn btn-success"
-            id="mark_attendance">
-        📍 Mark Attendance
-    </button>
+        <h3 class="mb-4">Today's Attendance</h3>
 
-    <br><br>
+        <div id="today_status"></div>
 
-    <span id="attendance_status"></span>
+        <div class="mt-4">
+
+            <button class="btn btn-success"
+                    id="mark_attendance">
+                📍 Check In
+            </button>
+
+            <button class="btn btn-danger"
+                    id="check_out"
+                    style="display:none;">
+                🚪 Check Out
+            </button>
+
+        </div>
+
+        <div class="mt-3">
+            <span id="attendance_status"></span>
+        </div>
+
+    </div>
 
 </div>
+
+<br>
+
+
 
 <hr>
 
 
 
-                        <div class="form-group">
-                            <label>Select Department</label>
-                            <select  id="department" class="form-control">
-                                <option value="">----</option>
-                                {% for department in departments  %}
-                                <option value="{{department.id}}">{{department.name}} </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label>Start Date</label>
-                                    <input type="date" class="form-control" placeholder="Start Date" name="start_date" required id="start_date">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label>End Date</label>
-                                    <input type="date" class="form-control" placeholder="End Date" name="end_date"  id="end_date">
-                                </div>
-                            </div>
-                            <button type="button" id="fetch_attendance" class="btn btn-primary btn-block">Fetch
-                                Attendance Data</button>
-               </div>
+                        
+                     <hr>
 
-                    </div>
-                    <!-- /.card-body -->
+<div class="card mt-3">
 
-                    <div class="card-footer">
-                            
-                        <div class="row" id="attendance_data"></div>
-                    </div>
-                </div>
-                <!-- /.card -->
-
-            </div>
-        </div>
+    <div class="card-header">
+        <h4 class="mb-0">Attendance History</h4>
     </div>
+
+    <div class="card-body">
+
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-striped table-hover">
+
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                        <th>Marked By</th>
+                    </tr>
+                </thead>
+
+                <tbody id="attendance_data">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+    
+
+</div>
 </section>
 {% endblock content %}
 
@@ -108,68 +129,122 @@ $(document).ready(function () {
 
     // ================= Fetch Attendance =================
 
-    $("#fetch_attendance").click(function () {
+    function loadAttendanceHistory() {
 
-        var department = $("#department").val()
-        var start_date = $("#start_date").val()
-        var end_date = $("#end_date").val()
+    $.ajax({
 
-        if (department.length == 0 || end_date.length == 0 || start_date.length == 0) {
-            alert("Please Select Department and Date Range");
-            return false;
-        }
+        url: "{% url 'employee_view_attendance' %}",
 
-        $("#attendance_data").html(null)
+        type: "POST",
 
-        $.ajax({
+        success: function(response){
 
-            url: "{% url 'employee_view_attendance' %}",
+            var json_data = JSON.parse(response);
 
-            type: 'POST',
+            var html = "";
 
-            data: {
-                department: department,
-                start_date: start_date,
-                end_date: end_date
-            }
+            if(json_data.length == 0){
 
-        }).done(function (response) {
+                html = "<tr><td colspan='5' class='text-center'>No Attendance Found</td></tr>";
 
-            var json_data = JSON.parse(response)
+            }else{
 
-            if (json_data.length < 1) {
+                for(var key in json_data){
 
-                $("#attendance_data").html("<div class='col-md-12 alert alert-danger'>No Data For Specified Parameters</div>");
+                    html += "<tr>";
 
-            } else {
+                    html += "<td>"+json_data[key].date+"</td>";
+                    html += "<td>"+json_data[key].check_in+"</td>";
+                    html += "<td>"+json_data[key].check_out+"</td>";
+                    html += "<td>"+json_data[key].status+"</td>";
+                    html += "<td>"+json_data[key].marked_by+"</td>";
 
-                var div_data = "";
-
-                for (key in json_data) {
-
-                    if (json_data[key]['status']) {
-
-                        div_data += "<div class='col-lg-3 attendance_div_green'><b>" + json_data[key]['date'] + "</b><br/>Present</div>";
-
-                    } else {
-
-                        div_data += "<div class='col-lg-3 attendance_div_red'><b>" + json_data[key]['date'] + "</b><br/>Absent</div>";
-
-                    }
-
+                    html += "</tr>";
                 }
 
-                $("#attendance_data").html(div_data);
+            }
+
+            $("#attendance_data").html(html);
+
+        },
+
+        error:function(){
+
+            $("#attendance_data").html(
+                "<tr><td colspan='5'>Unable to Load Attendance</td></tr>"
+            );
+
+        }
+
+    });
+
+}
+
+loadAttendanceHistory();
+function loadTodayStatus(){
+
+    $.ajax({
+
+        url: "{% url 'attendance_status' %}",
+
+        type: "POST",
+
+        success:function(response){
+
+            if(!response.checked_in){
+
+                $("#mark_attendance").show();
+                $("#check_out").hide();
+
+                $("#today_status").html(
+"<div class='attendance_div_red'>Today's attendance is not marked.</div>"                );
 
             }
 
-        }).fail(function () {
+            else if(response.checked_in && !response.checked_out){
 
-            $("#attendance_data").html("Error While Fetching Records");
+                $("#mark_attendance").hide();
+                $("#check_out").show();
 
-        });
+               $("#today_status").html(`
+    <div class="card border-success shadow-sm mx-auto" style="max-width:350px;">
+        <div class="card-body text-center">
+            <h5 class="text-success mb-2">
+                <i class="fa fa-check-circle"></i> Checked In
+            </h5>
+            <h4>${response.check_in}</h4>
+        </div>
+    </div>
+`);
+            }
+
+            else{
+
+                $("#mark_attendance").hide();
+                $("#check_out").hide();
+
+ $("#today_status").html(`
+    <div class="card border-success shadow-sm mx-auto" style="max-width:400px;">
+        <div class="card-body text-center">
+            <h5 class="text-success mb-3">
+                <i class="fa fa-check-circle"></i> Attendance Completed
+            </h5>
+
+            <p><strong>Check In:</strong> ${response.check_in}</p>
+
+            <p><strong>Check Out:</strong> ${response.check_out}</p>
+        </div>
+    </div>
+`);
+            }
+
+        }
 
     });
+
+}
+
+loadTodayStatus();
 
 
     // ================= Mark Attendance =================
@@ -202,19 +277,24 @@ $(document).ready(function () {
 
                     success:function(response){
 
-                        if(response.status){
+                       if(response.status){
 
-                            $("#attendance_status").html(
-                                "<span class='text-success'><b>"+response.message+"</b></span>"
-                            );
+    $("#attendance_status").html(
+        "<span class='text-success'><b>"+response.message+"</b></span>"
+    );
 
-                        }else{
+     window.location.reload();
 
-                            $("#attendance_status").html(
-                                "<span class='text-danger'><b>"+response.message+"</b></span>"
-                            );
 
-                        }
+}else{
+
+    $("#attendance_status").html(
+        "<span class='text-danger'><b>"+response.message+"</b></span>"
+    );
+
+}
+
+                        
 
                     },
 
@@ -237,6 +317,45 @@ $(document).ready(function () {
             }
 
         );
+
+    });
+
+});
+$("#check_out").click(function () {
+
+    $.ajax({
+
+        url: "{% url 'check_out' %}",
+
+        type: "POST",
+
+        success: function(response){
+
+            if(response.status){
+
+    $("#attendance_status").html(
+        "<span class='text-success'><b>"+response.message+"</b></span>"
+    );
+
+     window.location.reload();
+
+}else{
+
+                $("#attendance_status").html(
+                    "<span class='text-danger'><b>"+response.message+"</b></span>"
+                );
+
+            }
+
+        },
+
+        error:function(){
+
+            $("#attendance_status").html(
+                "<span class='text-danger'><b>Server Error</b></span>"
+            );
+
+        }
 
     });
 
