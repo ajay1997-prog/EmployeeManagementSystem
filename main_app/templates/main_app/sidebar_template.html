@@ -386,10 +386,15 @@
                                 <a href="{{manager_view_notification}}"
                                     class="nav-link {% if manager_view_notification == request.path %} active {% endif %}">
                                     <i class="nav-icon fas fa-th"></i>
-                                    <p>
-                                        View Notifications
+                                   <p>
+    View Notifications
 
-                                    </p>
+    {% if notification_count > 0 %}
+        <span class="right badge badge-danger">
+            {{ notification_count }}
+        </span>
+    {% endif %}
+</p>
                                 </a>
                             </li>
 
@@ -492,17 +497,25 @@
                                             </a>
                                         </li>
 
-                                        <li class="nav-item">
-                                            {% url 'employee_view_notification' as employee_view_notification %}
-                                            <a href="{{employee_view_notification}}"
-                                                class="nav-link {% if employee_view_notification == request.path %} active {% endif %}">
-                                                <i class="nav-icon fas fa-th"></i>
-                                                <p>
-                                                    View Notifications
+                                       <li class="nav-item">
+    {% url 'employee_view_notification' as employee_view_notification %}
+    <a href="{{employee_view_notification}}"
+        class="nav-link {% if employee_view_notification == request.path %} active {% endif %}">
 
-                                                </p>
-                                            </a>
-                                        </li>
+        <i class="nav-icon fas fa-bell"></i>
+
+        <p>
+            View Notifications
+
+            {% if notification_count > 0 %}
+                <span class="right badge badge-danger">
+                    {{ notification_count }}
+                </span>
+            {% endif %}
+        </p>
+
+    </a>
+</li>
 
                                         <li class="nav-item">
                                             {% url 'employee_apply_leave' as employee_apply_leave %}

@@ -233,7 +233,7 @@ def employee_view_salary(request):
     salarys = EmployeeSalary.objects.filter(employee=employee)
     context = {
         'salarys': salarys,
-        'page_title': "View Salary"
+        'page_title': "View Compensation"
     }
     return render(request, "employee_template/employee_view_salary.html", context)
 
