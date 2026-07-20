@@ -1,3 +1,5 @@
+from django.core.mail import send_mail
+from django.conf import settings
 import json
 import requests
 from django.contrib import messages
@@ -136,7 +138,42 @@ def add_employee(request):
                 user.employee.ifsc_code = ifsc_code
                 user.employee.pf_number = pf_number 
                 user.save()
-                messages.success(request, "Successfully Added")
+
+                # Send Welcome Email
+                try:
+                    send_mail(
+                        subject="Welcome to OfficeOps",
+                        message=f"""
+                Dear {first_name} {last_name},
+
+                Welcome to OfficeOps!
+
+                Your employee account has been created successfully.
+
+                Employee Code : {employee_code}
+                Name          : {first_name} {last_name}
+                Email         : {email}
+                Designation   : {designation}
+                Division      : {division.name}
+                Department    : {department.name}
+                Joining Date  : {joining_date}
+
+                Login URL:
+                http://127.0.0.1:8000/
+
+                Please use the password provided by the administrator to log in.
+
+                Regards,
+                OfficeOps HR Team
+                """,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[email],
+                        fail_silently=False,
+                    )
+                except Exception as mail_error:
+                    print("Email Error:", mail_error)
+
+                messages.success(request, "Employee added successfully and welcome email sent.")
                 return redirect(reverse('add_employee'))
             except Exception as e:
                 messages.error(request, "Could Not Add: " + str(e))
